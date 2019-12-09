@@ -13,92 +13,57 @@
 
 {{ partial "hero.html" . }}
 
-{{ with .Site.GetPage "/home" }}
-    {{ $home := . }}
-    {{ $pages := .Resources.ByType "page" }}
+{{ $home := .Site.GetPage "/home" }}
 
-    {{ with .Site.GetPage "/blog" }}
-        {{ $pages = $pages | append . }}
-    {{ end }}
+{{ $pages := $home.Resources.ByType "page" }}
+{{ $pages = $pages | append (.Site.GetPage "/blog") }}
+{{ $pages = $pages | append (.Site.GetPage "/projects") }}
 
-    {{ with .Site.GetPage "/projects" }}
-        {{ $pages = $pages | append . }}
-    {{ end }}
+{{/* sort by weight, excluding contact.md */}}
+{{ $pages = sort (where $pages ".Name" "ne" "contact.md") "Params.weight" }}
 
-    {{ range sort $pages "Params.weight" }}
-        {{ if ne .Name "contact.md" }}
-            {{ if .File }}
-                {{ if eq (os.Stat .File.Dir).Name "projects" }}
-                    <!-- Now for some cool projects -->
-                    {{ partial "home/projects.html" . }}
-                {{ else if eq (os.Stat .File.Dir).Name "blog" }}
-                    <!-- Let`s show some blog posts -->
-                    {{ partial "home/blog.html" . }}
-                {{ else }}
-
-                    <!-- Range through all sections in /home execept contact.md -->
-                    <div class="section" id="{{ .File.TranslationBaseName }}">
-                        <div class="container">
-                            <h2 class="title is-2 has-text-centered">{{ .Title }}</h2>
-                            {{ if .Params.Image }}
-                                <div class="columns">
-                                    <div class="column is-one-third has-text-centered">
-                                        {{ with $home.Resources.GetMatch .Params.Image }}
-                                            {{ with .Resize "320x" }}
-                                                <img class="img-responsive avatar" src="{{ .Permalink }}"
-                                                     alt="{{ .Name }}">
-                                            {{ end }}
-                                        {{ end }}
-                                    </div>
-                                    <div class="markdown column">
-                                        {{ .Content }}
-                                    </div>
-                                </div>
-                            {{ else }}
-                                {{ partial "home/section.html" . }}
-                            {{ end }}
-                        </div>
-                        <!-- End About container-->
-                        {{ partial "top-icon.html" . }}
-                    </div>
-                    <div class="container">
-                        <hr>
-                    </div>
-                {{ end }}
-            {{ end }}
-        {{ end }}
-    {{ end }}
-
-    <!-- Let`s chat, shall we? -->
-    {{ with .Resources.GetMatch "contact.md" }}
-        <div class="section" id="{{ .File.TranslationBaseName }}">
-            <div class="container has-text-centered">
-                <h2 class="title is-2">{{ .Title }}</h2>
-                <div class="markdown">
-                    {{ .Content }}
-                </div>
-                {{ if .Site.Params.home.localTime }}
-                    <p>{{ i18n "index_currentTime" . }} <span id="time"
-                                                              data-time-zone="{{ .Site.Params.home.timeZone }}"
-                                                              data-time-format="{{ .Site.Params.home.timeFormat }}"></span>.
-                    </p>
-                {{ end }}
-                {{ with .Site.Params.email }}
-                    <h3 class="subtitle is-3 has-text-centered top-pad">
-                        <a href="mailto:{{ . }}">{{ . }}</a>
-                    </h3>
-                {{ end }}
-                {{ partial "home/social.html" . }}
-            </div>
-            <!-- End Contact container -->
-            {{ partial "top-icon.html" . }}
-        </div>
-        <div class="container">
-            <hr>
-        </div>
-    {{ end }}
-    <!-- End Contact section -->
+{{/* append contact.md, if exists, to make sure it's always last */}}
+{{ with $home.Resources.GetMatch "contact.md" }}
+    {{ $pages = $pages | append . }}
 {{ end }}
+
+{{ range $pages }}
+    {{ $id := .Title }}
+
+    {{ if ne .File.TranslationBaseName "_index" }}
+        {{ $id = .File.TranslationBaseName }}
+    {{ end }}
+
+    <div class="section" id="{{ $id | urlize }}">
+        {{ if eq .Type "projects" }}
+            {{ partial "projects.html" . }}
+
+        {{ else if eq .Type "blog" }}
+            {{ partial "blog-latest.html" . }}
+
+        {{ else if eq .Name "contact.md" }}
+            {{ partial "home/contact.html" . }}
+
+        {{ else if .Params.Image }}
+            {{ partial "home/section-image.html" . }}
+
+        {{ else }}
+            {{ partial "home/section.html" . }}
+
+        {{ end }}
+
+        {{ partial "top-icon.html" . }}
+    </div>
+
+    {{ if and (eq .Type "blog")  .Site.Params.home.showAllPosts }}
+        {{ partial "blog-all.html" . }}
+    {{ end }}
+
+    <div class="container">
+        <hr>
+    </div>
+{{ end }}
+
 
 {{ partial "footer/text.html" . }}
 
