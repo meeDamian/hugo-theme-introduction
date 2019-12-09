@@ -39,7 +39,7 @@
             {{ partial "projects.html" . }}
 
         {{ else if eq .Type "blog" }}
-            {{ partial "blog-latest.html" . }}
+            {{ partial "blog.html" . }}
 
         {{ else if eq .Name "contact.md" }}
             {{ partial "home/contact.html" . }}
@@ -54,10 +54,6 @@
 
         {{ partial "top-icon.html" . }}
     </div>
-
-    {{ if and (eq .Type "blog")  .Site.Params.home.showAllPosts }}
-        {{ partial "blog-all.html" . }}
-    {{ end }}
 
     <div class="container">
         <hr>
