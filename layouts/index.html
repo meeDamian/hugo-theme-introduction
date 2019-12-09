@@ -1,72 +1,71 @@
-<!DOCTYPE html>
-<html lang="{{ .Site.LanguageCode }}">
-
-<head>
+{{ define "head" }}
     {{ partial "head/metadata.html" . }}
     {{ partial "head/openGraph.html" . }}
     {{ partial "head/favicons.html" . }}
     {{ partial "head/css.html" . }}
     {{ partial "css/owlCarousel.html" . }}
-</head>
-
-<body>
-
-{{ partial "hero.html" . }}
-
-{{ $home := .Site.GetPage "/home" }}
-
-{{ $pages := $home.Resources.ByType "page" }}
-{{ $pages = $pages | append (.Site.GetPage "/blog") }}
-{{ $pages = $pages | append (.Site.GetPage "/projects") }}
-
-{{/* sort by weight, excluding contact.md */}}
-{{ $pages = sort (where $pages ".Name" "ne" "contact.md") "Params.weight" }}
-
-{{/* append contact.md, if exists, to make sure it's always last */}}
-{{ with $home.Resources.GetMatch "contact.md" }}
-    {{ $pages = $pages | append . }}
 {{ end }}
 
-{{ range $pages }}
-    {{ $id := .Title }}
+{{ define "main" }}
+    {{ partial "hero.html" . }}
 
-    {{ if ne .File.TranslationBaseName "_index" }}
-        {{ $id = .File.TranslationBaseName }}
+    {{ $home := .Site.GetPage "/home" }}
+
+    {{ $pages := $home.Resources.ByType "page" }}
+    {{ $pages = $pages | append (.Site.GetPage "/blog") }}
+    {{ $pages = $pages | append (.Site.GetPage "/projects") }}
+
+    {{/* sort by weight, excluding contact.md */}}
+    {{ $pages = sort (where $pages ".Name" "ne" "contact.md") "Params.weight" }}
+
+    {{/* append contact.md, if exists, to make sure it's always last */}}
+    {{ with $home.Resources.GetMatch "contact.md" }}
+        {{ $pages = $pages | append . }}
     {{ end }}
 
-    <div class="section" id="{{ $id | urlize }}">
-        {{ if eq .Type "projects" }}
-            {{ partial "projects.html" . }}
+    {{ range $pages }}
+        {{ $id := .Title }}
 
-        {{ else if eq .Type "blog" }}
-            {{ partial "blog.html" . }}
-
-        {{ else if eq .Name "contact.md" }}
-            {{ partial "home/contact.html" . }}
-
-        {{ else if .Params.Image }}
-            {{ partial "home/section-image.html" . }}
-
-        {{ else }}
-            {{ partial "home/section.html" . }}
-
+        {{ if ne .File.TranslationBaseName "_index" }}
+            {{ $id = .File.TranslationBaseName }}
         {{ end }}
 
-        {{ partial "top-icon.html" . }}
-    </div>
+        <div class="section" id="{{ $id | urlize }}">
+            {{ if eq .Type "projects" }}
+                {{ partial "projects.html" . }}
 
-    <div class="container">
-        <hr>
-    </div>
+            {{ else if eq .Type "blog" }}
+                {{ partial "blog.html" . }}
+
+            {{ else if eq .Name "contact.md" }}
+                {{ partial "home/contact.html" . }}
+
+            {{ else if .Params.Image }}
+                {{ partial "home/section-image.html" . }}
+
+            {{ else }}
+                {{ partial "home/section.html" . }}
+
+            {{ end }}
+
+            {{ partial "top-icon.html" . }}
+        </div>
+
+        <div class="container">
+            <hr>
+        </div>
+    {{ end }}
 {{ end }}
 
-{{ partial "footer/text.html" . }}
-{{ partial "footer/scripts.html" . }}
-{{ partial "js/owlCarousel.html" . }}
-
-{{ if .Site.Params.home.localTime }}
-    {{ partial "js/momentjs.html" . }}
+{{ define "footer" }}
+    {{ partial "footer/text.html" . }}
+    {{ partial "footer/scripts.html" . }}
 {{ end }}
-</body>
 
-</html>
+{{ define "js-include" }}
+    {{ partial "js/owlCarousel.html" . }}
+
+    {{ if .Site.Params.home.localTime }}
+        {{ partial "js/momentjs.html" . }}
+    {{ end }}
+{{ end }}
