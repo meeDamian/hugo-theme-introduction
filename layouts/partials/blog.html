@@ -16,14 +16,11 @@
 </div>
 
 {{ if .Site.Params.home.showAllPosts }}
-{{/*    <div class="section" id="all-posts">*/}}
-        <div class="container">
-            <h2 class="title is-2 has-text-centered top-pad">{{ i18n "index_blog_allPosts" . }}</h2>
-            {{ partialCached "blog/li.html" . }}
-        </div>
-{{/*    </div>*/}}
+    <div class="container">
+        <h2 class="title is-2 has-text-centered top-pad">{{ i18n "index_blog_allPosts" . }}</h2>
+        {{ partialCached "blog/li.html" . }}
+    </div>
 {{ end }}
-
 
 <div class="container has-text-centered top-pad">
     <a href="{{ .Permalink }}">{{ i18n "index_blog_allPosts" . }}</a>
